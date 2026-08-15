@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowDown, ArrowRight, ShieldCheck, Truck } from 'lucide-react'
+import { ArrowRight, ShieldCheck, Truck } from 'lucide-react'
 import { categories, products } from '@/data/catalogue'
 import { ProductCard } from '@/components/product/product-card'
 import { ProductVisual } from '@/components/product/product-visual'
@@ -12,29 +12,21 @@ export default function HomePage() {
     <main>
       <section className="hero">
         <div className="hero-copy">
-          <p className="kicker">
-            <span>The Focus Edit</span> / New for late summer
-          </p>
-          <h1>
-            Tools for
-            <br />
-            work that
-            <br />
-            <em>matters.</em>
-          </h1>
+          <p className="kicker">Workspace essentials / The Focus Edit</p>
+          <h1>Workspace essentials</h1>
           <p>
-            Useful objects, chosen for how they work and how long they last. For
-            home desks, shared studios, and work on the move.
+            Lighting, furniture and desk tools selected for smaller, calmer
+            workspaces.
           </p>
           <div className="hero-actions">
             <Link className="primary-cta" href="/products">
-              Explore the collection{' '}
+              Shop all products{' '}
               <span>
                 <ArrowRight />
               </span>
             </Link>
-            <Link className="text-cta" href="#workbench">
-              Shop the edit <ArrowDown />
+            <Link className="text-cta" href="/categories/desk-tools">
+              Browse desk tools <ArrowRight />
             </Link>
           </div>
         </div>
@@ -78,9 +70,9 @@ export default function HomePage() {
       </section>
       <section className="section categories-section">
         <div className="section-heading">
-          <p className="eyebrow">Shop by use</p>
-          <h2>Organise the work around you.</h2>
-          <p>Start with the place, routine, or task that needs attention.</p>
+          <p className="eyebrow">Browse the range</p>
+          <h2>Shop by category</h2>
+          <p>Start with the part of your workspace that needs attention.</p>
         </div>
         <div className="category-grid">
           {categories.map((category) => (
@@ -110,11 +102,11 @@ export default function HomePage() {
       <section className="section workbench" id="workbench">
         <div className="workbench-heading">
           <div>
-            <p className="eyebrow">The current edit</p>
-            <h2>Objects we reach for.</h2>
+            <p className="eyebrow">Selected for everyday work</p>
+            <h2>Featured products</h2>
           </div>
           <Link href="/products">
-            View all 12 objects <ArrowRight />
+            View all 12 products <ArrowRight />
           </Link>
         </div>
         <div className="product-grid">
@@ -125,13 +117,9 @@ export default function HomePage() {
       </section>
       <section className="guide-banner">
         <div>
-          <span aria-hidden="true">F/F guide</span>
+          <span aria-hidden="true">Product guide</span>
           <p className="eyebrow">Product help</p>
-          <h2>
-            Bring us the
-            <br />
-            <em>constraint.</em>
-          </h2>
+          <h2>Need help choosing?</h2>
           <p>
             Tell us the space, budget, or problem. The guide checks this
             catalogue and returns a short, explainable answer.

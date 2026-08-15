@@ -6,16 +6,10 @@ export default function StudioPage() {
     return (
       <main className="studio-setup">
         <p className="eyebrow">Sanity Studio / Setup required</p>
-        <h1>
-          Your content workspace
-          <br />
-          is ready to connect.
-        </h1>
+        <h1>Connect Sanity Studio</h1>
         <p>
-          Create or choose a Sanity project, copy <code>.env.example</code> to{' '}
-          <code>.env.local</code>, and add the public project ID and dataset.
-          Restart the dev server and Studio will mount here with Sanity
-          authentication.
+          Add your Sanity project ID and dataset to <code>.env.local</code>,
+          then restart the development server.
         </p>
         <pre>
           NEXT_PUBLIC_SANITY_PROJECT_ID=your-project-id{`\n`}

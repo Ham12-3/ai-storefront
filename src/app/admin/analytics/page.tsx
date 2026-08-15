@@ -4,7 +4,6 @@ import {
   CalendarDays,
   Download,
   Info,
-  RefreshCw,
 } from 'lucide-react'
 import { requireAnalyticsUser } from '@/auth/permissions'
 import { overview } from '@/analytics/server/reports'
@@ -21,21 +20,18 @@ export default async function AnalyticsOverviewPage() {
           <h1>Store performance</h1>
         </div>
         <div className="admin-controls">
-          <button>
-            <CalendarDays /> 17 Jul – 15 Aug 2026
-          </button>
-          <button>
-            <RefreshCw /> Compare previous
-          </button>
+          <span className="admin-control-label">
+            <CalendarDays aria-hidden="true" /> 17 Jul – 15 Aug 2026
+          </span>
           <a href="/api/analytics/export">
-            <Download /> Export CSV
+            <Download aria-hidden="true" /> Export CSV
           </a>
         </div>
       </header>
       {user.demo && (
         <div className="demo-notice">
-          <Info /> Fictional demo metrics are shown. Configure Auth.js and
-          PostgreSQL for production data.
+          <Info aria-hidden="true" /> Fictional demo metrics are shown.
+          Configure Auth.js and PostgreSQL for production data.
         </div>
       )}
       <p className="updated">Last processed {overview.updated}</p>
@@ -44,7 +40,7 @@ export default async function AnalyticsOverviewPage() {
           <article key={metric.label}>
             <p>
               {metric.label}
-              <Info />
+              <Info aria-hidden="true" />
             </p>
             <strong>{metric.value}</strong>
             <span className={metric.change.startsWith('+') ? 'positive' : ''}>

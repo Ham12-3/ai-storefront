@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation'
 import {
   Activity,
   BarChart3,
-  Bot,
   Box,
   ChartNoAxesCombined,
   MessageSquareText,
+  MessageCircleQuestion,
   Search,
   Settings,
   Shapes,
@@ -29,7 +29,7 @@ const groups = [
   {
     label: 'Customer insight',
     items: [
-      ['AI assistant', '/admin/analytics/ai-assistant', Bot],
+      ['AI assistant', '/admin/analytics/ai-assistant', MessageCircleQuestion],
       ['Sentiment', '/admin/analytics/sentiment', Activity],
       ['Conversations', '/admin/analytics/conversations', MessageSquareText],
       ['Content gaps', '/admin/analytics/content-gaps', Shapes],
@@ -63,8 +63,9 @@ export function AdminNav() {
               key={href}
               href={href}
               className={pathname === href ? 'active' : ''}
+              aria-current={pathname === href ? 'page' : undefined}
             >
-              <Icon />
+              <Icon aria-hidden="true" />
               {label}
             </Link>
           ))}

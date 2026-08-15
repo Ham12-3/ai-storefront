@@ -14,8 +14,10 @@ test('browse, add to basket, and reach validated demo checkout', async ({
 }) => {
   await page.goto('/')
   await dismissConsent(page)
-  await expect(page.getByRole('heading', { name: /tools for/i })).toBeVisible()
-  await page.getByRole('link', { name: /explore the collection/i }).click()
+  await expect(
+    page.getByRole('heading', { name: /workspace essentials/i }),
+  ).toBeVisible()
+  await page.getByRole('link', { name: /shop all products/i }).click()
   await page
     .getByRole('link', { name: /arc task lamp/i })
     .first()
@@ -45,11 +47,11 @@ test('natural language search and mobile guide', async ({ page }) => {
   await page.goto('/')
   await dismissConsent(page)
   await page
-    .getByRole('button', { name: /(open ai shopping guide|product help)/i })
+    .getByRole('button', { name: /(open product guide|product help)/i })
     .first()
     .click()
   await expect(
-    page.getByRole('complementary', { name: /shopping guide/i }),
+    page.getByRole('dialog', { name: /product guide/i }),
   ).toBeVisible()
 })
 test('analytics and Studio setup are reachable', async ({ page }) => {
@@ -59,6 +61,6 @@ test('analytics and Studio setup are reachable', async ({ page }) => {
   ).toBeVisible()
   await page.goto('/studio', { waitUntil: 'domcontentloaded' })
   await expect(
-    page.getByRole('heading', { name: /content workspace/i }),
+    page.getByRole('heading', { name: /connect sanity studio/i }),
   ).toBeVisible()
 })

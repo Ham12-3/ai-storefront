@@ -18,24 +18,20 @@ export function MoneyInput(props: NumberInputProps) {
     )
   }, [props.value])
   return (
-    <div style={{ display: 'grid', gap: 6 }}>
+    <div className="money-input">
       <label
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          border: error ? '1px solid #d63f24' : '1px solid #cad1d5',
-          borderRadius: 3,
-          background: 'white',
-        }}
+        className={
+          error ? 'money-input-control has-error' : 'money-input-control'
+        }
       >
-        <span
-          style={{ padding: '10px 12px', borderRight: '1px solid #cad1d5' }}
-        >
-          £
-        </span>
+        <span>£</span>
         <input
           aria-label={props.schemaType.title}
+          aria-describedby={error ? 'money-input-error' : undefined}
           inputMode="decimal"
+          name={props.schemaType.name}
+          autoComplete="off"
+          spellCheck={false}
           value={display}
           placeholder="0.00"
           onChange={(event) => {
@@ -52,16 +48,9 @@ export function MoneyInput(props: NumberInputProps) {
               )
             }
           }}
-          style={{
-            border: 0,
-            outline: 0,
-            padding: 11,
-            font: 'inherit',
-            width: '100%',
-          }}
         />
       </label>
-      {error && <small style={{ color: '#d63f24' }}>{error}</small>}
+      {error && <small id="money-input-error">{error}</small>}
     </div>
   )
 }

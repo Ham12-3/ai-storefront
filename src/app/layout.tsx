@@ -1,19 +1,18 @@
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
-import { Archivo, IBM_Plex_Mono, Manrope } from 'next/font/google'
+import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google'
 import { BasketProvider } from '@/components/basket/basket-provider'
 import { SiteHeader } from '@/components/layout/site-header'
 import { AssistantPanel } from '@/components/ai/assistant-panel'
 import { ConsentBanner } from '@/components/analytics/consent-banner'
 import './globals.css'
-import './refined.css'
+import './retail.css'
 
-const display = Archivo({
+const sans = IBM_Plex_Sans({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-display',
 })
-const body = Manrope({ subsets: ['latin'], variable: '--font-body' })
 const mono = IBM_Plex_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
@@ -39,10 +38,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html
-      lang="en-GB"
-      className={`${display.variable} ${body.variable} ${mono.variable}`}
-    >
+    <html lang="en-GB" className={`${sans.variable} ${mono.variable}`}>
+      <head>
+        <link
+          rel="preconnect"
+          href="https://images.unsplash.com"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         <a className="skip-link" href="#main-content">
           Skip to content
