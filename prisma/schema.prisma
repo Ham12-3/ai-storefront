@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CartStatus {
+  ACTIVE
+  CHECKOUT
+  COMPLETED
+  ABANDONED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+  EXPIRED
+}
+
+enum ConsentState {
+  UNKNOWN
+  GRANTED
+  DENIED
+}
+
+enum ConversationStatus {
+  OPEN
+  RESOLVED
+  UNRESOLVED
+}
+
+enum SentimentLabel {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+  MIXED
+  UNCERTAIN
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  RETRY
+  DEAD_LETTER
+}
+
+enum AdminRole {
+  ADMIN
+  ANALYST
+  EDITOR
+}
+
+model Cart {
+  id          String     @id @default(cuid())
+  sessionHash String     @unique
+  currency    String     @default("GBP")
+  status      CartStatus @default(ACTIVE)
+  items       CartItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model CartItem {
+  id                 String   @id @default(cuid())
+  cartId             String
+  cart               Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId          String
+  variantId          String
+  titleSnapshot      String
+  variantSnapshot    String
+  unitPriceMinor     Int
+  quantity           Int
+  addedFromAi        Boolean  @default(false)
+  recommendationId   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  @@unique([cartId, variantId])
+  @@index([productId])
+}
+
+model InventoryItem {
+  id               String   @id @default(cuid())
+  variantId        String   @unique
+  sku              String   @unique
+  stockQuantity    Int
+  reservedQuantity Int      @default(0)
+  reorderLevel     Int      @default(3)
+  version          Int      @default(1)
+  updatedAt        DateTime @updatedAt
+  reservations     InventoryReservation[]
+}
+
+model InventoryReservation {
+  id              String            @id @default(cuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem     @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  cartId          String?
+  orderId         String?
+  quantity        Int
+  status          ReservationStatus @default(ACTIVE)
+  expiresAt       DateTime
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  @@index([expiresAt, status])
+}
+
+model Order {
+  id                      String      @id @default(cuid())
+  orderNumber             String      @unique
+  stripeCheckoutSessionId String?     @unique
+  sessionHash             String
+  status                  OrderStatus @default(PENDING)
+  currency                String
+  subtotalMinor           Int
+  deliveryMinor           Int
+  taxMinor                 Int
+  totalMinor               Int
+  aiAssisted               Boolean     @default(false)
+  paidAt                   DateTime?
+  items                    OrderItem[]
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @updatedAt
+  @@index([sessionHash, createdAt])
+}
+
+model OrderItem {
+  id              String @id @default(cuid())
+  orderId         String
+  order           Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  variantId       String
+  sku             String
+  titleSnapshot   String
+  variantSnapshot String
+  unitPriceMinor  Int
+  quantity        Int
+  lineTotalMinor  Int
+  @@index([productId])
+}
+
+model PaymentEvent {
+  id          String   @id @default(cuid())
+  providerId  String   @unique
+  type        String
+  payloadHash String
+  processedAt DateTime @default(now())
+}
+
+model PriceAudit {
+  id             String   @id @default(cuid())
+  productId      String
+  variantId      String?
+  previousMinor  Int?
+  currentMinor   Int
+  sourceRevision String?
+  detectedAt     DateTime @default(now())
+  @@index([productId, detectedAt])
+}
+
+model AnalyticsSession {
+  id              String       @id @default(cuid())
+  sessionHash     String       @unique
+  consent         ConsentState @default(UNKNOWN)
+  firstSeenAt     DateTime     @default(now())
+  lastSeenAt      DateTime     @default(now())
+  landingPath     String?
+  referrerDomain  String?
+  countryCode     String?
+  events          AnalyticsEvent[]
+  conversations   AiConversation[]
+  searches        SearchQuery[]
+  recommendations RecommendationEvent[]
+}
+
+model AnalyticsEvent {
+  id          String           @id @default(cuid())
+  eventId     String           @unique
+  sessionId   String?
+  session     AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  name        String
+  version     Int
+  occurredAt  DateTime
+  productId   String?
+  valueMinor  Int?
+  currency    String?
+  properties  Json?
+  receivedAt  DateTime         @default(now())
+  @@index([name, occurredAt])
+  @@index([productId, occurredAt])
+}
+
+model AiConversation {
+  id               String             @id @default(cuid())
+  publicId         String             @unique
+  sessionId        String?
+  session          AnalyticsSession?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  consent          ConsentState
+  status           ConversationStatus @default(OPEN)
+  startedAt        DateTime           @default(now())
+  endedAt          DateTime?
+  firstResponseMs  Int?
+  totalInputTokens Int                @default(0)
+  totalOutputTokens Int               @default(0)
+  messages         AiMessage[]
+  insights         ConversationInsight[]
+  feedback         AiFeedback[]
+  recommendations  RecommendationEvent[]
+  @@index([startedAt, status])
+}
+
+model AiMessage {
+  id                String         @id @default(cuid())
+  conversationId    String
+  conversation      AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role              String
+  redactedContent   String?
+  contentHash       String
+  toolName          String?
+  toolSuccess       Boolean?
+  latencyMs         Int?
+  tokenInput        Int?
+  tokenOutput       Int?
+  expiresAt         DateTime?
+  createdAt         DateTime       @default(now())
+  @@index([conversationId, createdAt])
+  @@index([expiresAt])
+}
+
+model ConversationInsight {
+  id               String         @id @default(cuid())
+  conversationId   String
+  conversation     AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sentiment        SentimentLabel
+  confidence       Float
+  topics           String[]
+  resolved         Boolean?
+  summary           String
+  model             String
+  manualSentiment  SentimentLabel?
+  correctedByHash  String?
+  correctedAt      DateTime?
+  createdAt        DateTime       @default(now())
+  @@index([sentiment, createdAt])
+}
+
+model AiFeedback {
+  id             String         @id @default(cuid())
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  messageId      String?
+  helpful        Boolean
+  reason         String?
+  createdAt      DateTime       @default(now())
+}
+
+model SearchQuery {
+  id             String            @id @default(cuid())
+  sessionId      String?
+  session        AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  queryHash      String
+  normalisedQuery String?
+  resultCount    Int
+  clickedProductId String?
+  convertedOrderId String?
+  occurredAt     DateTime          @default(now())
+  @@index([occurredAt, resultCount])
+}
+
+model RecommendationEvent {
+  id             String            @id @default(cuid())
+  publicId       String            @unique
+  sessionId      String?
+  session        AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  conversationId String?
+  conversation   AiConversation?   @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  productId      String
+  shownAt        DateTime          @default(now())
+  clickedAt      DateTime?
+  addedAt        DateTime?
+  orderId        String?
+  @@index([productId, shownAt])
+}
+
+model AnalyticsJob {
+  id          String    @id @default(cuid())
+  type        String
+  dedupeKey   String    @unique
+  payload     Json
+  status      JobStatus @default(PENDING)
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(5)
+  runAfter    DateTime  @default(now())
+  lockedAt    DateTime?
+  lockedBy    String?
+  lastError   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([status, runAfter])
+}
+
+model DailyStoreMetric {
+  id                    String   @id @default(cuid())
+  date                  DateTime @unique @db.Date
+  timezone              String
+  sessions              Int
+  orders                Int
+  revenueMinor          Int
+  productViews          Int
+  basketAdditions       Int
+  checkoutStarts        Int
+  aiConversations       Int
+  aiAssistedOrders      Int
+  negativeConversations Int
+  analysedConversations Int
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model DailyProductMetric {
+  id              String   @id @default(cuid())
+  date            DateTime @db.Date
+  productId       String
+  views           Int
+  basketAdditions Int
+  purchases       Int
+  revenueMinor    Int
+  aiRecommendations Int
+  @@unique([date, productId])
+}
+
+model DailySearchMetric {
+  id            String   @id @default(cuid())
+  date          DateTime @db.Date
+  queryHash     String
+  safeQuery     String?
+  searches      Int
+  zeroResults   Int
+  resultClicks  Int
+  conversions   Int
+  @@unique([date, queryHash])
+}
+
+model AnalyticsAuditLog {
+  id          String    @id @default(cuid())
+  actorHash   String
+  role        AdminRole
+  action      String
+  targetType  String?
+  targetIdHash String?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  @@index([action, createdAt])
+}
