@@ -22,7 +22,7 @@ export default async function ProductPage({
   return (
     <main className="product-page">
       <Link href="/products" className="back-link">
-        <ArrowLeft /> Back to all objects
+        <ArrowLeft /> Back to all products
       </Link>
       <section className="product-detail">
         <ProductVisual product={product} />
@@ -88,11 +88,7 @@ export default async function ProductPage({
       <section className="detail-facts">
         <div>
           <p className="eyebrow">Why it works</p>
-          <h2>
-            Made to make
-            <br />
-            focus feel easier.
-          </h2>
+          <h2>Designed for everyday work</h2>
         </div>
         <ul>
           {product.features.map((feature) => (

@@ -7,7 +7,14 @@ import {
   assistantSystemPrompt,
   detectPromptInjection,
 } from '@/ai/shopping/security'
-import { effectivePrice, formatMoney } from '@/commerce/money'
+import {
+  buildGroundedFallback,
+  buildShoppingContext,
+  policyForQuestion,
+  productIdsMentionedIn,
+  selectGuideProducts,
+} from '@/ai/shopping/response'
+import { assistantPolicyContext } from '@/data/policies'
 
 const inputSchema = z
   .object({
@@ -31,41 +38,62 @@ export async function POST(request: Request) {
     parsed.data.message,
     new UnavailableSemanticProvider(),
   )
-  const context = result.products.map((product) => ({
-    id: product.id,
-    title: product.title,
-    priceMinor: effectivePrice(product),
-    currency: product.currency,
-    stock: product.variants
-      .filter((v) => v.active)
-      .map((v) => ({ id: v.variantId, name: v.name, stock: v.stock })),
-    facts: [product.shortDescription, ...product.features],
-  }))
+  const isPolicyQuestion = Boolean(policyForQuestion(parsed.data.message))
+  const guideProducts = isPolicyQuestion
+    ? []
+    : selectGuideProducts(result.products)
+  const context = buildShoppingContext(guideProducts)
+  const fallbackText = buildGroundedFallback(parsed.data.message, guideProducts)
+  const fallbackProductIds = productIdsMentionedIn(fallbackText, guideProducts)
+
   if (!env.OPENAI_API_KEY) {
-    if (!context.length)
-      return Response.json({
-        text: 'I couldn’t find a grounded match in the current catalogue. Try describing the use, material, or maximum budget.',
-        productIds: [],
-      })
-    const lead = result.products[0]!
     return Response.json({
-      text: `${lead.title} is the strongest current match at ${formatMoney(effectivePrice(lead))}. ${lead.shortDescription} ${result.fallbackUsed ? 'I used exact and keyword matching while semantic search is unavailable.' : ''}`,
-      productIds: result.products.map((item) => item.id),
+      text: fallbackText,
+      productIds: fallbackProductIds,
       mode: 'demo',
     })
   }
+
   const client = new OpenAI({ apiKey: env.OPENAI_API_KEY })
-  const response = await client.responses.create({
-    model: env.OPENAI_SHOPPING_MODEL,
-    instructions: assistantSystemPrompt,
-    input: `Customer question: ${parsed.data.message}\nCurrent catalogue tool result: ${JSON.stringify(context)}`,
-    max_output_tokens: 450,
-  })
-  return Response.json({
-    text:
-      response.output_text ||
-      'I could not form a grounded answer from the current catalogue.',
-    productIds: result.products.map((item) => item.id),
-    mode: 'openai',
-  })
+
+  try {
+    const response = await client.responses.create({
+      model: env.OPENAI_SHOPPING_MODEL,
+      instructions: assistantSystemPrompt,
+      input: `Customer question: ${parsed.data.message}\nCurrent catalogue tool result: ${JSON.stringify(context)}\nCurrent store policy tool result: ${JSON.stringify(assistantPolicyContext)}`,
+      reasoning: { effort: 'low' },
+      max_output_tokens: 1200,
+    })
+    const text = response.output_text.trim()
+
+    if (response.status !== 'completed' || !text) {
+      console.warn('Shopping guide used its grounded fallback.', {
+        status: response.status,
+        reason: response.incomplete_details?.reason,
+        model: response.model,
+      })
+
+      return Response.json({
+        text: fallbackText,
+        productIds: fallbackProductIds,
+        mode: 'fallback',
+      })
+    }
+
+    return Response.json({
+      text,
+      productIds: productIdsMentionedIn(text, guideProducts),
+      mode: 'openai',
+    })
+  } catch (error) {
+    console.error('Shopping guide request failed.', {
+      error: error instanceof Error ? error.name : 'UnknownError',
+    })
+
+    return Response.json({
+      text: fallbackText,
+      productIds: fallbackProductIds,
+      mode: 'fallback',
+    })
+  }
 }

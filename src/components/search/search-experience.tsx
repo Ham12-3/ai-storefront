@@ -1,40 +1,70 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Search, SlidersHorizontal, Sparkles } from 'lucide-react'
+import { useDeferredValue, useMemo, useState } from 'react'
+import { Search, X } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
 import { products } from '@/data/catalogue'
 import { inferFilters, keywordSearch } from '@/search/catalogue'
 import { ProductCard } from '@/components/product/product-card'
 
 export function SearchExperience({ initial = '' }: { initial?: string }) {
   const [query, setQuery] = useState(initial)
+  const deferredQuery = useDeferredValue(query)
+  const router = useRouter()
+  const pathname = usePathname()
   const results = useMemo(
-    () => (query.trim() ? keywordSearch(query, inferFilters(query)) : products),
-    [query],
+    () =>
+      deferredQuery.trim()
+        ? keywordSearch(deferredQuery, inferFilters(deferredQuery))
+        : products,
+    [deferredQuery],
   )
   return (
     <div>
-      <form className="search-box" onSubmit={(event) => event.preventDefault()}>
-        <Search />
+      <form
+        className="search-box"
+        role="search"
+        onSubmit={(event) => {
+          event.preventDefault()
+          const value = query.trim()
+          router.replace(
+            value ? `${pathname}?q=${encodeURIComponent(value)}` : pathname,
+            { scroll: false },
+          )
+        }}
+      >
+        <Search aria-hidden="true" />
+        <label className="sr-only" htmlFor="catalogue-search">
+          Search products
+        </label>
         <input
+          id="catalogue-search"
+          type="search"
           name="catalogue-search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Try “a portable desk setup under £100”…"
           autoComplete="off"
-          aria-label="Search the catalogue"
         />
-        <button type="button">
-          <SlidersHorizontal /> Filters
-        </button>
+        {query && (
+          <button
+            type="button"
+            className="search-clear"
+            aria-label="Clear search"
+            onClick={() => {
+              setQuery('')
+              router.replace(pathname, { scroll: false })
+            }}
+          >
+            <X aria-hidden="true" />
+          </button>
+        )}
       </form>
       {query && (
-        <div className="search-summary">
-          <p>
-            <Sparkles /> Interpreting “{query}”
-          </p>
-          <span>{results.length} current matches · keyword fallback ready</span>
-        </div>
+        <p className="search-summary" aria-live="polite">
+          {results.length} {results.length === 1 ? 'result' : 'results'} for “
+          {query}”
+        </p>
       )}
       <div className="catalogue-grid">
         {results.map((product, index) => (
@@ -43,12 +73,8 @@ export function SearchExperience({ initial = '' }: { initial?: string }) {
       </div>
       {query && results.length === 0 && (
         <div className="empty-state">
-          <h2>No useful matches yet.</h2>
-          <p>
-            Try a broader material, use case, or budget. The query has been
-            recorded without personal details so the team can improve the
-            catalogue.
-          </p>
+          <h2>No products match that search</h2>
+          <p>Try a product type, material, or a broader price range.</p>
         </div>
       )}
     </div>

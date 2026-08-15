@@ -127,13 +127,13 @@ export function ReportPage({ title }: { title: keyof typeof data }) {
           <span>{report.description}</span>
         </div>
         <div className="admin-controls">
-          <button>
-            <CalendarDays /> Last 30 days
-          </button>
+          <span className="admin-control-label">
+            <CalendarDays aria-hidden="true" /> Last 30 days
+          </span>
           <a
             href={`/api/analytics/export?report=${encodeURIComponent(title.toLowerCase())}`}
           >
-            <Download /> Export
+            <Download aria-hidden="true" /> Export
           </a>
         </div>
       </header>
@@ -142,11 +142,11 @@ export function ReportPage({ title }: { title: keyof typeof data }) {
           <article key={label}>
             <p>
               {label}
-              <Info />
+              <Info aria-hidden="true" />
             </p>
             <strong>{value}</strong>
             <span>
-              <TrendingUp />
+              <TrendingUp aria-hidden="true" />
               {change}
             </span>
           </article>
@@ -177,7 +177,7 @@ export function ReportPage({ title }: { title: keyof typeof data }) {
         </table>
       </article>
       <div className="method-note">
-        <Info />
+        <Info aria-hidden="true" />
         <p>
           <b>Method note</b> Results use server-side aggregates, documented
           attribution windows, and equal-length previous periods. Small

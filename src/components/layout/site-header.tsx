@@ -22,7 +22,7 @@ export function SiteHeader() {
       <header className="site-header">
         <Link href="/" className="brand" aria-label="Form and Function home">
           <span>F/F</span>
-          <em>Objects for considered work</em>
+          <em>Workspace essentials</em>
         </Link>
         <button
           className="icon-button mobile-menu"
@@ -30,22 +30,22 @@ export function SiteHeader() {
           aria-expanded={open}
           aria-label="Toggle navigation"
         >
-          {open ? <X /> : <Menu />}
+          {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
         </button>
         <nav className={open ? 'nav open' : 'nav'} aria-label="Main navigation">
           <Link href="/products">Shop all</Link>
           <Link href="/categories/desk-tools">Desk tools</Link>
-          <Link href="/collections/the-focus-edit">Collections</Link>
+          <Link href="/categories/lighting">Lighting</Link>
           <Link href="/policies/delivery">Delivery</Link>
         </nav>
         <div className="header-actions">
           <Link href="/search" className="icon-button" aria-label="Search">
-            <Search />
+            <Search aria-hidden="true" />
           </Link>
           <button
             className="assistant-trigger"
             onClick={() => window.dispatchEvent(new Event('open-assistant'))}
-            aria-label="Open AI shopping guide"
+            aria-label="Open product guide"
           >
             Product help
           </button>
@@ -54,7 +54,7 @@ export function SiteHeader() {
             className="basket-link"
             aria-label={`Basket with ${count} items`}
           >
-            <ShoppingBag />
+            <ShoppingBag aria-hidden="true" />
             <span>Basket&nbsp; {count}</span>
           </Link>
         </div>

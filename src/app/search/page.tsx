@@ -10,11 +10,7 @@ export default async function SearchPage({
     <main className="listing-page search-page">
       <header className="listing-header">
         <p className="eyebrow">Search the catalogue</p>
-        <h1>
-          What would make
-          <br />
-          today work better?
-        </h1>
+        <h1>Search products</h1>
       </header>
       <SearchExperience initial={q} />
     </main>

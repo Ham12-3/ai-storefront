@@ -19,17 +19,17 @@ export function ConsentBanner() {
     <aside className="consent-banner" aria-label="Analytics choices">
       <div>
         <p className="eyebrow">Your analytics choice</p>
-        <h2>Useful insight, fewer details.</h2>
+        <h2>Choose your analytics setting</h2>
         <p>
-          Optional analytics helps improve search and the shopping guide.
-          Conversation text is not stored by default, and personal information
-          is redacted before any permitted analysis. Essential basket and
-          checkout processing always works.
+          Optional analytics helps improve search and product guidance. Basket
+          and checkout features work with either choice.
         </p>
         <Link href="/policies/privacy">Read the privacy summary</Link>
       </div>
       <div>
         <button
+          type="button"
+          className="consent-secondary"
           onClick={() => {
             setConsent('denied')
             setVisible(false)
@@ -38,6 +38,8 @@ export function ConsentBanner() {
           Use essential only
         </button>
         <button
+          type="button"
+          className="consent-primary"
           onClick={() => {
             setConsent('granted')
             setVisible(false)

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { ProductCard } from '@/components/product/product-card'
 import { products } from '@/data/catalogue'
 
@@ -6,34 +7,23 @@ export default function ProductsPage() {
   return (
     <main className="listing-page">
       <header className="listing-header">
-        <p className="eyebrow">The full catalogue</p>
-        <h1>
-          Objects that
-          <br />
-          earn their place.
-        </h1>
+        <p className="eyebrow">Shop all</p>
+        <h1>Workspace products</h1>
         <p>
-          {products.length} considered tools for work, travel, and everyday
-          rituals.
+          {products.length} dependable tools for desks, studios, and work on the
+          move.
         </p>
       </header>
-      <div className="filter-bar">
-        <span>
-          All objects <b>{products.length}</b>
-        </span>
-        <span>Furniture</span>
-        <span>Lighting</span>
-        <span>Desk tools</span>
-        <span>Carry</span>
-        <label>
-          Sort{' '}
-          <select defaultValue="featured">
-            <option value="featured">Featured</option>
-            <option value="low">Price: low to high</option>
-            <option value="high">Price: high to low</option>
-          </select>
-        </label>
-      </div>
+      <nav className="filter-bar" aria-label="Product categories">
+        <Link href="/products">
+          All products <b>{products.length}</b>
+        </Link>
+        <Link href="/categories/furniture">Furniture</Link>
+        <Link href="/categories/lighting">Lighting</Link>
+        <Link href="/categories/desk-tools">Desk tools</Link>
+        <Link href="/categories/carry">Carry</Link>
+        <span>{products.length} products · Featured order</span>
+      </nav>
       <div className="catalogue-grid">
         {products.map((product, index) => (
           <ProductCard key={product.id} product={product} index={index} />

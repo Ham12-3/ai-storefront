@@ -18,6 +18,7 @@ export function AddToBasket({
   const { add } = useBasket()
   return (
     <button
+      type="button"
       className={compact ? 'add-button compact' : 'add-button'}
       onClick={() => {
         add(product, variantId)
@@ -27,11 +28,11 @@ export function AddToBasket({
     >
       {added ? (
         <>
-          <Check /> Added
+          <Check aria-hidden="true" /> Added
         </>
       ) : (
         <>
-          <Plus /> Add to basket
+          <Plus aria-hidden="true" /> Add to basket
         </>
       )}
     </button>
